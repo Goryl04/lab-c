@@ -7,8 +7,27 @@
 
     <link rel="stylesheet" href="styles.css" type="text/css">
     <script src="scripts.js" defer></script>
+    <link rel="stylesheet" href="leaflet-1.9.4/leaflet.css" />
+    <script src="leaflet-1.9.4/leaflet-src.js"></script>
+    <script src="leaflet-1.9.4/leaflet-providers.js"></script>
+    <script src="leaflet-1.9.4/leaflet-image.js"></script>
 </head>
 <body>
-a
+    <div class="map-buttons">
+        <div class="map-container" id="map">
+        </div>
+        <div class="buttons-container">
+            <button id="my_location">My Location</button>
+            <button id="download_map">Download map</button>
+        </div>
+    </div>
+    <div class="canvas-container">
+        <h3>Downloaded raster photo</h3>
+        <canvas id="rasterMap"></canvas>
+    </div>
+    <div class="puzzle-container" id="puzzle">
+    </div>
+    <div class="puzzle-solution-container" id="puzzle_solution">
+    </div>
 </body>
 </html>
