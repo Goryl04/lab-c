@@ -4,7 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let map = L.map('map').setView([53.4285, 14.5528], 15);
-  L.tileLayer.provider('Esri.WorldImagery').addTo(map);
+
+  L.tileLayer.provider('Esri.WorldImagery', {
+    crossOrigin: true
+  }).addTo(map);
+
   let userMarker = null;
 
   document.getElementById("my_location").addEventListener("click", () => {
@@ -22,20 +26,33 @@ document.addEventListener("DOMContentLoaded", () => {
       if (userMarker) {
         map.removeLayer(userMarker);
       }
-      userMarker = L.marker([lat, lon]).addTo(map).bindPopup("Your location").openPopup();
+
+      userMarker = L.marker([lat, lon])
+        .addTo(map)
+        .bindPopup("Your location")
+        .openPopup();
+
     }, positionError => {
       console.error(positionError);
     });
   });
 
   document.getElementById("download_map").addEventListener("click", () => {
-    const puzzlePieces = document.getElementById("puzzle-pieces");
-    const puzzleBoard = document.getElementById("puzzle-board");
+    const puzzlePieces = document.getElementById("puzzle");
+    const puzzleBoard = document.getElementById("puzzle_solution");
     const rasterMap = /** @type {HTMLCanvasElement} */ (document.getElementById("rasterMap"));
     const rasterContext = rasterMap.getContext("2d");
 
+    if (!rasterContext) {
+      console.error("Canvas context error");
+      return;
+    }
+
     puzzlePieces.innerHTML = "";
     puzzleBoard.innerHTML = "";
+
+    rasterMap.width = 400;
+    rasterMap.height = 400;
 
     for (let i = 0; i < 16; i++) {
       const cell = document.createElement("div");
@@ -48,11 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     leafletImage(map, function (err, canvas) {
       if (err) {
-        console.error("Error while generating the image: ", err);
+        console.error("Leaflet error:", err);
         return;
       }
 
-      rasterContext.clearRect(0, 0, rasterMap.width, rasterMap.height);
+      rasterContext.clearRect(0, 0, 400, 400);
       rasterContext.drawImage(canvas, 0, 0, 400, 400);
 
       const pieces = [];
@@ -78,10 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
           piece.id = `piece-${row * 4 + col}`;
           piece.dataset.correctIndex = (row * 4 + col).toString();
           piece.addEventListener("dragstart", dragStart);
+
           pieces.push(piece);
         }
       }
+
       pieces.sort(() => Math.random() - 0.5);
+
       pieces.forEach(p => puzzlePieces.appendChild(p));
     });
   });
@@ -100,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function drop(e) {
     e.preventDefault();
     const cell = e.currentTarget;
+
     if (cell.classList.contains("puzzle-cell") && cell.children.length === 0) {
       cell.appendChild(draggedElement);
       verifyPuzzle();
@@ -109,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function verifyPuzzle() {
     const cells = document.querySelectorAll(".puzzle-cell");
     let correctCount = 0;
+
     cells.forEach(cell => {
       const piece = cell.firstElementChild;
       if (piece && cell.dataset.index === piece.dataset.correctIndex) {
@@ -126,5 +148,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
 });
