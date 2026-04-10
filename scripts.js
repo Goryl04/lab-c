@@ -103,6 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
       pieces.sort(() => Math.random() - 0.5);
 
       pieces.forEach(p => puzzlePieces.appendChild(p));
+
+      puzzlePieces.addEventListener("dragover", dragOver);
+      puzzlePieces.addEventListener("drop", drop);
     });
   });
 
@@ -119,33 +122,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function drop(e) {
     e.preventDefault();
-    const cell = e.currentTarget;
+    const target = e.currentTarget;
 
-    if (cell.classList.contains("puzzle-cell") && cell.children.length === 0) {
-      cell.appendChild(draggedElement);
+    if (target.classList.contains("puzzle-cell")) {
+      if (target.children.length === 0) {
+        target.appendChild(draggedElement);
+      } else {
+        const existing = target.firstElementChild;
+        target.removeChild(existing);
+        target.appendChild(draggedElement);
+        document.getElementById("puzzle").appendChild(existing);
+      }
+      verifyPuzzle();
+    } else if (target.id === "puzzle") {
+      target.appendChild(draggedElement);
       verifyPuzzle();
     }
   }
 
   function verifyPuzzle() {
-    const cells = document.querySelectorAll(".puzzle-cell");
-    let correctCount = 0;
+    setTimeout(() => {
+      const cells = document.querySelectorAll(".puzzle-cell");
+      let correctCount = 0;
+      let totalOnBoard = 0;
 
-    cells.forEach(cell => {
-      const piece = cell.firstElementChild;
-      if (piece && cell.dataset.index === piece.dataset.correctIndex) {
-        correctCount++;
+      cells.forEach(cell => {
+        const piece = cell.firstElementChild;
+        if (piece) {
+          totalOnBoard++;
+          if (cell.dataset.index === piece.dataset.correctIndex) {
+            correctCount++;
+          }
+        }
+      });
+      console.debug(`Currently correct pieces: ${correctCount} / 16, on board: ${totalOnBoard}`);
+
+      if (totalOnBoard === 16 && correctCount === 16) {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Success!", { body: "You've completed the puzzle!" });
+        } else {
+          alert("Success! You've completed the puzzle!");
+        }
       }
-    });
-
-    console.debug(`Currently correct pieces: ${correctCount} / 16`);
-
-    if (correctCount === 16) {
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Success!", { body: "You've completed the puzzle!" });
-      } else {
-        alert("Success! You've completed the puzzle!");
-      }
-    }
+    }, 100);
   }
 });
