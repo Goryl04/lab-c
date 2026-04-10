@@ -160,9 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (totalOnBoard === 16 && correctCount === 16) {
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Success!", { body: "You've completed the puzzle!" });
-        } else {
-          alert("Success! You've completed the puzzle!");
         }
+        alert("Success! You've completed the puzzle!");
       }
     }, 100);
   }
